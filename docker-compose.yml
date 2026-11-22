@@ -1,0 +1,27 @@
+services:
+  order-service:
+    build: ./order-service
+    container_name: maltashop-order
+    ports:
+      - "8000:8000"
+    environment:
+      NOTIFICATION_URL: http://notification-service:8001/notify
+      DATABASE_PATH: /data/orders.db
+    volumes:
+      - order_data:/data
+    depends_on:
+      - notification-service
+
+  notification-service:
+    build: ./notification-service
+    container_name: maltashop-notification
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_PATH: /data/notifications.db
+    volumes:
+      - notification_data:/data
+
+volumes:
+  order_data:
+  notification_data:

@@ -34,7 +34,7 @@ def create_order(order_data: Order):
 
     try:
         response = requests.post(
-            "http://127.0.0.1:8001/notify",
+            "http://notification-service:8001/notify",
             json={
                 "order_id": order_data.order_id,
                 "message": f"Your order {order_data.order_name} has been received successfully!"
