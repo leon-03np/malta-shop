@@ -1,16 +1,30 @@
+
 services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: maltashop-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   order-service:
     build: ./order-service
     container_name: maltashop-order
     ports:
       - "8000:8000"
     environment:
-      NOTIFICATION_URL: http://notification-service:8001/notify
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672/%2F
       DATABASE_PATH: /data/orders.db
     volumes:
       - order_data:/data
     depends_on:
-      - notification-service
+      rabbitmq:
+        condition: service_healthy
 
   notification-service:
     build: ./notification-service
@@ -18,9 +32,13 @@ services:
     ports:
       - "8001:8001"
     environment:
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672/%2F
       DATABASE_PATH: /data/notifications.db
     volumes:
       - notification_data:/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
 volumes:
   order_data:
